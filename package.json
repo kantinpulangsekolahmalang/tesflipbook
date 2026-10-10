@@ -1,0 +1,18 @@
+{
+  "name": "tesflipbook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web flipbook statis: baca PDF/gambar dengan transisi membalik halaman seperti buku sungguhan.",
+  "type": "module",
+  "scripts": {
+    "serve": "python3 -m http.server 8080 --bind 0.0.0.0",
+    "dist": "node deploy/make-dist.js"
+  },
+  "license": "MIT",
+  "comment": [
+    "Tidak ada dependensi runtime: seluruh library sudah di-vendor di",
+    "assets/vendor/ (StPageFlip 2.0.7, pdf.js 4.8.69 legacy, pdf-lib 1.17.1).",
+    "npm run serve  -> jalankan lokal di http://localhost:8080",
+    "npm run dist   -> buat deploy/dist + deploy/flipbook-dist.zip untuk diunggah ke hosting"
+  ]
+}

@@ -1,0 +1,3 @@
+# Hasil pengemasan dibuat ulang oleh `npm run dist`, jangan masuk git.
+dist/
+flipbook-dist.zip
