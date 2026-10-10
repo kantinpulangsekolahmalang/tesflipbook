@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flipbook &mdash; Baca Komik dengan Efek Buka Halaman</title>
+<meta name="description" content="Web flipbook dengan transisi membalik halaman seperti buku sungguhan. Muat file PDF atau gambar langsung dari perangkatmu, semuanya diproses di browser.">
+<meta name="theme-color" content="#16110f">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316110f'/%3E%3Cpath d='M16 8c-3 0-5.5 1-7 2v14c1.5-1 4-2 7-2s5.5 1 7 2V10c-1.5-1-4-2-7-2z' fill='none' stroke='%23e8b469' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M16 8v14' stroke='%23e8b469' stroke-width='1.8'/%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Vendored locally: no CDN, works offline & on GitHub Pages -->
+<script src="assets/vendor/page-flip.browser.js" defer></script>
+<script src="assets/vendor/pdf-lib.min.js" defer></script>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ============ LANDING / PICKER ============ -->
+  <section class="screen screen--landing is-active" id="screenLanding">
+    <div class="landing">
+      <header class="landing__head">
+        <div class="brand">
+          <svg class="brand__mark" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M24 10c-5 0-9.2 1.8-11.6 3.4v25c2.4-1.6 6.6-3.4 11.6-3.4s9.2 1.8 11.6 3.4v-25C33.2 11.8 29 10 24 10z"
+                  fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M24 10v25" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M28.5 16.5c3 .4 5.4 1.6 7.1 2.9v18.2" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" opacity=".45"/>
+          </svg>
+          <span class="brand__name">Flipbook</span>
+        </div>
+        <p class="landing__tag">Komik &amp; PDF yang bisa <em>dibalik</em> seperti buku sungguhan.</p>
+      </header>
+
+      <div class="dropzone" id="dropzone" tabindex="0" role="button"
+           aria-label="Pilih atau jatuhkan file PDF maupun gambar di sini">
+        <input type="file" id="fileInput" accept=".pdf,application/pdf,image/*" multiple hidden>
+        <div class="dropzone__inner">
+          <div class="dropzone__icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <path d="M14 44V16a4 4 0 0 1 4-4h18l14 14v18a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z"
+                    fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+              <path d="M36 12v14h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+              <path d="M32 52V34m0 0-6 6m6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6"
+                    stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 32 43)"/>
+            </svg>
+          </div>
+          <h1 class="dropzone__title">Jatuhkan PDF di sini</h1>
+          <p class="dropzone__hint">atau <span class="linklike">telusuri file</span> &mdash; PDF, JPG, PNG, WEBP</p>
+          <p class="dropzone__sub">Semua diproses di browsermu. Tidak ada file yang diunggah ke server mana pun.</p>
+        </div>
+      </div>
+
+      <div class="landing__actions">
+        <button class="btn btn--ghost" id="btnDemo" type="button">
+          <span class="btn__dot" aria-hidden="true"></span> Buka komik demo
+        </button>
+        <label class="btn btn--ghost" for="srcInput">Muat dari URL</label>
+      </div>
+
+      <div class="urlbar" id="urlbar" hidden>
+        <input type="url" id="srcInput" placeholder="https://contoh.com/komik.pdf" autocomplete="off" spellcheck="false">
+        <button class="btn btn--solid" id="btnLoadUrl" type="button">Muat</button>
+      </div>
+
+      <ul class="features" role="list">
+        <li><strong>Transisi halaman 3D</strong><span>Tarik sudut halaman, klik, geser, atau pakai tombol panah.</span></li>
+        <li><strong>Mode buku terbuka</strong><span>Dua halaman berdampingan di layar lebar, otomatis satu halaman di HP.</span></li>
+        <li><strong>Privat</strong><span>Berkasmu tidak pernah meninggalkan perangkat.</span></li>
+      </ul>
+
+      <footer class="landing__foot">
+        <span id="footHint">Tip: setelah dibuka, tekan <kbd>F</kbd> untuk layar penuh.</span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ============ READER ============ -->
+  <section class="screen screen--reader" id="screenReader" aria-label="Pembaca flipbook">
+    <div class="bookwrap" id="bookwrap">
+      <div class="book-shadow" aria-hidden="true"></div>
+      <div id="flipbook" aria-live="polite"></div>
+    </div>
+
+    <div class="reader-ui">
+      <div class="toolbar" id="toolbar">
+        <button class="tbtn" id="btnClose" type="button" title="Tutup berkas" aria-label="Tutup berkas">
+          <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="tooltitle" id="docTitle" title="">Demo</div>
+
+        <button class="tbtn" id="btnPrev" type="button" title="Halaman sebelumnya" aria-label="Halaman sebelumnya">
+          <svg viewBox="0 0 24 24"><path d="M11 6 5 12l6 6M19 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="pager">
+          <input type="range" id="pageSlider" min="0" max="1" value="0" step="1" aria-label="Geser ke halaman">
+          <span class="pagenum"><b id="pageNow">1</b><i>/</i><span id="pageAll">1</span></span>
+        </div>
+
+        <button class="tbtn" id="btnNext" type="button" title="Halaman berikutnya" aria-label="Halaman berikutnya">
+          <svg viewBox="0 0 24 24"><path d="M13 6l6 6-6 6M5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <button class="tbtn" id="btnSpread" type="button" title="Ganti mode satu/dua halaman" aria-label="Ganti mode satu atau dua halaman" aria-pressed="false">
+          <svg viewBox="0 0 24 24"><path d="M12 6v12M12 6C10 4.8 7 4.5 4 5v13c3-.5 6-.2 8 1 2-1.2 5-1.5 8-1V5c-3-.5-6-.2-8 1z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>
+        </button>
+
+        <button class="tbtn" id="btnSound" type="button" title="Suara kertas" aria-label="Suara kertas" aria-pressed="true">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        </button>
+
+        <button class="tbtn" id="btnFull" type="button" title="Layar penuh" aria-label="Layar penuh">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">Tarik sudut halaman untuk membalik</div>
+  </section>
+
+  <!-- ============ LOADING ============ -->
+  <div class="loader" id="loader" hidden role="status" aria-live="polite">
+    <div class="loader__card">
+      <div class="loader__spin" aria-hidden="true"></div>
+      <p class="loader__text" id="loaderText">Menyiapkan halaman&hellip;</p>
+      <div class="loader__bar"><span id="loaderBar"></span></div>
+      <p class="loader__meta" id="loaderMeta"></p>
+    </div>
+  </div>
+
+  <!-- ============ TOAST ============ -->
+  <div class="toast" id="toast" role="alert" hidden></div>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
