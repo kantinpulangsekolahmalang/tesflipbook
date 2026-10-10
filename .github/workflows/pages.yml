@@ -26,6 +26,10 @@ jobs:
 
       - name: Siapkan Pages
         uses: actions/configure-pages@v5
+        with:
+          # Menyalakan GitHub Pages untuk repo ini bila belum aktif.
+          # Memakai izin `pages: write` milik GITHUB_TOKEN workflow ini.
+          enablement: true
 
       - name: Unggah artefak situs
         uses: actions/upload-pages-artifact@v3
